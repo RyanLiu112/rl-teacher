@@ -57,6 +57,12 @@ def _write_and_upload_video(env_id, gcs_path, local_path, segment):
     upload_to_gcs(local_path, gcs_path)
 
 
+def _write_video(env_id, gcs_path, local_path, segment):
+    env = make_with_torque_removed(env_id)
+    write_segment_to_video(segment, fname=local_path, env=env)
+    # upload_to_gcs(local_path, gcs_path)
+
+
 class HumanComparisonCollector():
     def __init__(self, env_id, experiment_name):
         from human_feedback_api import Comparison
@@ -80,6 +86,16 @@ class HumanComparisonCollector():
         media_url = "https://storage.googleapis.com/%s/%s" % (gcs_bucket.lstrip("gs://"), media_id)
         return media_url
 
+    def convert_segment_to_local_path(self, comparison_uuid, side, segment):
+        tmp_media_dir = '/tmp/rl_teacher_media'
+        media_id = "%s-%s.mp4" % (comparison_uuid, side)
+        local_path = osp.join(tmp_media_dir, media_id)
+        gcs_bucket = os.environ.get('RL_TEACHER_GCS_BUCKET')
+        gcs_path = osp.join(gcs_bucket, media_id)
+        self._upload_workers.apply_async(_write_video, (self.env_id, gcs_path, local_path, segment))
+
+        return local_path
+
     def _create_comparison_in_webapp(self, left_seg, right_seg):
         """Creates a comparison DB object. Returns the db_id of the comparison"""
         from human_feedback_api import Comparison
@@ -87,8 +103,10 @@ class HumanComparisonCollector():
         comparison_uuid = str(uuid.uuid4())
         comparison = Comparison(
             experiment_name=self.experiment_name,
-            media_url_1=self.convert_segment_to_media_url(comparison_uuid, 'left', left_seg),
-            media_url_2=self.convert_segment_to_media_url(comparison_uuid, 'right', right_seg),
+            # media_url_1=self.convert_segment_to_media_url(comparison_uuid, 'left', left_seg),
+            # media_url_2=self.convert_segment_to_media_url(comparison_uuid, 'right', right_seg),
+            media_url_1=self.convert_segment_to_local_path(comparison_uuid, 'left', left_seg),
+            media_url_2=self.convert_segment_to_local_path(comparison_uuid, 'right', right_seg),
             response_kind='left_or_right',
             priority=1.
         )
