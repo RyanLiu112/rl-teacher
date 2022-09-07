@@ -8,6 +8,7 @@ import numpy as np
 from rl_teacher.envs import make_with_torque_removed
 from rl_teacher.video import write_segment_to_video, upload_to_gcs
 
+
 class SyntheticComparisonCollector(object):
     def __init__(self):
         self._comparisons = []
@@ -49,10 +50,12 @@ class SyntheticComparisonCollector(object):
         # Mutate the comparison and give it the new label
         comparison['label'] = 0 if left_has_more_rew else 1
 
+
 def _write_and_upload_video(env_id, gcs_path, local_path, segment):
     env = make_with_torque_removed(env_id)
     write_segment_to_video(segment, fname=local_path, env=env)
     upload_to_gcs(local_path, gcs_path)
+
 
 class HumanComparisonCollector():
     def __init__(self, env_id, experiment_name):
