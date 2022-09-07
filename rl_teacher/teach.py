@@ -8,7 +8,7 @@ import numpy as np
 import tensorflow as tf
 from keras import backend as K
 from parallel_trpo.train import train_parallel_trpo
-from pposgd_mpi.run_mujoco import train_pposgd_mpi
+# from pposgd_mpi.run_mujoco import train_pposgd_mpi
 
 from rl_teacher.comparison_collectors import SyntheticComparisonCollector, HumanComparisonCollector
 from rl_teacher.envs import get_timesteps_per_episode
@@ -23,6 +23,7 @@ from rl_teacher.video import SegmentVideoRecorder
 
 CLIP_LENGTH = 1.5
 
+
 class TraditionalRLRewardPredictor(object):
     """Predictor that always returns the true reward provided by the environment."""
 
@@ -35,6 +36,7 @@ class TraditionalRLRewardPredictor(object):
 
     def path_callback(self, path):
         pass
+
 
 class ComparisonRewardPredictor():
     """Predictor that trains a model to predict how much reward is contained in a trajectory segment"""
@@ -101,7 +103,6 @@ class ComparisonRewardPredictor():
             dtype=tf.float32, shape=(None, None) + self.act_shape, name="act_placeholder")
         self.segment_alt_act_placeholder = tf.placeholder(
             dtype=tf.float32, shape=(None, None) + self.act_shape, name="alt_act_placeholder")
-
 
         # A vanilla multi-layer perceptron maps a (state, action) pair to a reward (Q-value)
         mlp = FullyConnectedMLP(self.obs_shape, self.act_shape)
@@ -207,6 +208,7 @@ class ComparisonRewardPredictor():
         self.agent_logger.log_simple("labels/total_comparisons", len(self.comparison_collector))
         self.agent_logger.log_simple(
             "labels/labeled_comparisons", len(self.comparison_collector.labeled_decisive_comparisons))
+
 
 def main():
     import argparse
@@ -317,9 +319,10 @@ def main():
         def make_env():
             return make_with_torque_removed(env_id)
 
-        train_pposgd_mpi(make_env, num_timesteps=num_timesteps, seed=args.seed, predictor=predictor)
+        # train_pposgd_mpi(make_env, num_timesteps=num_timesteps, seed=args.seed, predictor=predictor)
     else:
         raise ValueError("%s is not a valid choice for args.agent" % args.agent)
+
 
 if __name__ == '__main__':
     main()
