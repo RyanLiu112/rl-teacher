@@ -6,6 +6,7 @@ import subprocess
 
 import numpy as np
 from gym import error
+import cv2
 
 
 class SegmentVideoRecorder(object):
@@ -45,13 +46,23 @@ def export_video(frames, fname, fps=10):
 
     raw_image = isinstance(frames[0], tuple)
     shape = frames[0][0] if raw_image else frames[0].shape
-    encoder = ImageEncoder(fname, shape, fps)
-    for frame in frames:
-        if raw_image:
-            encoder.proc.stdin.write(frame[1])
-        else:
-            encoder.capture_frame(frame)
-    encoder.close()
+    # encoder = ImageEncoder(fname, shape, fps)
+    # for frame in frames:
+    #     if raw_image:
+    #         encoder.proc.stdin.write(frame[1])
+    #     else:
+    #         encoder.capture_frame(frame)
+    # encoder.close()
+    # fourcc = cv2.VideoWriter_fourcc('M', 'P', '4', 'V')
+    # out = cv2.VideoWriter(fname, fourcc, fps, (shape[0], shape[1]))
+    # for frame in frames:
+    #     out.write(frame)
+    temp_dir = fname.replace('.mp4', '')
+    os.makedirs(temp_dir, exist_ok=True)
+    for idx, frame in enumerate(frames):
+        temp_file = osp.join(temp_dir, '{:04d}.jpg'.format(idx))
+        with open(temp_file, 'wb') as f:
+            f.write(frame[1])
 
 
 class ImageEncoder(object):
