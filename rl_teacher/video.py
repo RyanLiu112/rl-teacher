@@ -6,6 +6,7 @@ import subprocess
 
 import numpy as np
 from gym import error
+from PIL import Image
 import cv2
 
 
@@ -53,16 +54,20 @@ def export_video(frames, fname, fps=10):
     #     else:
     #         encoder.capture_frame(frame)
     # encoder.close()
-    # fourcc = cv2.VideoWriter_fourcc('M', 'P', '4', 'V')
-    # out = cv2.VideoWriter(fname, fourcc, fps, (shape[0], shape[1]))
+
+    new_height, new_width = 500, 500
+    temp_dir = fname.replace('.mp4', '')
+    # os.makedirs(temp_dir, exist_ok=True)
+
+    fourcc = cv2.VideoWriter_fourcc('M', 'P', '4', 'V')
+    out = cv2.VideoWriter(fname, fourcc, fps, (new_height, new_width))
+    for idx, frame in enumerate(frames):
+        # temp_file = osp.join(temp_dir, '{:04d}.jpg'.format(idx))
+        image = Image.frombytes(mode="RGB", size=(shape[0], shape[1]), data=frame[1]).rotate(180).resize((new_height, new_width))
+        out.write(np.array(image))
+        # image.save(temp_file)
     # for frame in frames:
     #     out.write(frame)
-    temp_dir = fname.replace('.mp4', '')
-    os.makedirs(temp_dir, exist_ok=True)
-    for idx, frame in enumerate(frames):
-        temp_file = osp.join(temp_dir, '{:04d}.jpg'.format(idx))
-        with open(temp_file, 'wb') as f:
-            f.write(frame[1])
 
 
 class ImageEncoder(object):
